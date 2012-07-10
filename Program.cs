@@ -10,8 +10,7 @@ namespace Crm2011JavascriptDocumentor
     {
         static void Main(string[] args)
         {
-            //string inputFilePath = args[1];
-            string inputFilePath = "customizations.xml";
+            string inputFilePath = args[0];
 
             var xEl = XElement.Load(inputFilePath);
 
