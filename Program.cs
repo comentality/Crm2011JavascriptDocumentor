@@ -8,10 +8,18 @@ namespace Crm2011JavascriptDocumentor
 {
     class Program
     {
+        public static bool ToTextile { get; set; }
+        public static bool ToXsl { get; set; }
+        public static bool ToCsv { get; set; }
+
         static void Main(string[] args)
         {
-            //string inputFilePath = args[1];
-            string inputFilePath = "customizations.xml";
+            ToCsv = true;
+            ToTextile = false;
+            ToXsl = false;
+
+            string inputFilePath = args[0];
+            //string inputFilePath = "customizations.xml";
 
             var xEl = XElement.Load(inputFilePath);
 
@@ -29,7 +37,11 @@ namespace Crm2011JavascriptDocumentor
                         Forms =
                             lda_entity
                             .Descendants("form")
-                            //.Where(lda_form => lda_form.Ancestors("forms").Single().Attribute("type").ToString() != "type=mobile")
+                            .Where(lda_form =>
+                                // exclude build-in uncustomizable forms
+                                    (new List<string> { "mobile", "appointmentBook" })
+                                    .TrueForAll(x =>
+                                        x != lda_form.Ancestors("forms").Single().Attribute("type").Value))
                             .Select(lda_form =>
                                 new
                                 {
@@ -60,55 +72,99 @@ namespace Crm2011JavascriptDocumentor
                                             }
                                         )
                                         .ToList()
-
                                 })
                             .ToList()
                     }
                     )
                 .ToList();
 
-            StringBuilder docustring = new StringBuilder("h1. Javascript bindings on form");
-            docustring.AppendLine();
-            docustring.AppendLine();
-
-            foreach (var entity in entities)
+            if (ToTextile)
             {
-                docustring.AppendFormat("h2. Entity: {0}", entity.entityName);
+                StringBuilder docustring = new StringBuilder("h1. Javascript bindings on form");
                 docustring.AppendLine();
                 docustring.AppendLine();
 
-
-                foreach (var form in entity.Forms)
+                foreach (var entity in entities)
                 {
-                    docustring.AppendFormat("h3. Form: {0}", form.Type);
+                    docustring.AppendFormat("h2. Entity: {0}", entity.entityName);
                     docustring.AppendLine();
                     docustring.AppendLine();
 
-                    foreach (var event_ in form.Events)
+
+                    foreach (var form in entity.Forms)
                     {
-                        docustring.AppendFormat("h4. {0}{1}", event_.EventName.Value, event_.FieldName != null ? " of " + event_.FieldName.Value : "");
+                        docustring.AppendFormat("h3. Form: {0}", form.Type);
                         docustring.AppendLine();
                         docustring.AppendLine();
 
-                        foreach (var hendler in event_.Handlers)
+                        foreach (var event_ in form.Events)
                         {
-                            docustring.AppendLine("* "+ hendler.FunctionName);
-                            docustring.AppendLine("* "+ hendler.LibraryName); 
-                            docustring.AppendLine("* "+ hendler.Parameters); 
-                            docustring.AppendLine("* "+ hendler.IsEnabled); 
-                            docustring.AppendLine("* "+ hendler.IsExecutionContextPassed); 
+                            docustring.AppendFormat("h4. {0}{1}", event_.EventName.Value, event_.FieldName != null ? " of " + event_.FieldName.Value : "");
                             docustring.AppendLine();
                             docustring.AppendLine();
+
+                            foreach (var hendler in event_.Handlers)
+                            {
+                                docustring.AppendLine("* " + hendler.FunctionName);
+                                docustring.AppendLine("* " + hendler.LibraryName);
+                                docustring.AppendLine("* " + hendler.Parameters);
+                                docustring.AppendLine("* " + hendler.IsEnabled);
+                                docustring.AppendLine("* " + hendler.IsExecutionContextPassed);
+                                docustring.AppendLine();
+                                docustring.AppendLine();
+                            }
                         }
                     }
                 }
+
+                System.IO.StreamWriter file = new System.IO.StreamWriter("js.textile");
+                file.WriteLine(docustring.ToString());
+                file.Close();
             }
 
-            docustring.ToString();
+            if (ToCsv)
+            {
+                string[] line = new string[] {
+                    "Entity", "Form type", "Event", "Field Name","Function Name", "Library Name", "Parameters", "Enabled", "PassExecutionConteaxt" 
+                };
 
-            System.IO.StreamWriter file = new System.IO.StreamWriter("js.textile");
-            file.WriteLine(docustring.ToString());
-            file.Close();
+                string header = String.Join(", ", line);
+
+                StringBuilder docustring = new StringBuilder(header);
+
+                docustring.AppendLine();
+
+                foreach (var entity in entities)
+                {
+                    line[0] = entity.entityName;
+
+                    foreach (var form in entity.Forms)
+                    {
+                        line[1] = form.Type.Value;
+
+                        foreach (var event_ in form.Events)
+                        {
+                            line[2] = event_.EventName.Value;
+                            line[3] = event_.FieldName != null ? event_.FieldName.Value : "";
+
+                            foreach (var hendler in event_.Handlers)
+                            {
+                                line[4] = hendler.FunctionName.Value;
+                                line[5] = hendler.LibraryName.Value;
+                                line[6] = hendler.Parameters != null ? hendler.Parameters.Value : "";
+                                line[7] = hendler.IsEnabled.Value;
+                                line[8] = hendler.IsExecutionContextPassed != null ? hendler.IsExecutionContextPassed.Value : "";
+
+                                docustring.AppendLine(String.Join(", ", line));
+                            }
+                        }
+                    }
+                }
+
+                System.IO.StreamWriter file = new System.IO.StreamWriter("js.csv");
+                file.WriteLine(docustring.ToString());
+                file.Close();
+            }
         }
     }
 }
