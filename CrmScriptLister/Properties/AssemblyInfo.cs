@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Crm2011JavascriptDocumentor")]
+[assembly: AssemblyTitle("CrmScriptLister")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Crm2011JavascriptDocumentor")]
-[assembly: AssemblyCopyright("Copyright ©  2012")]
+[assembly: AssemblyCompany("SoftlineGroup.com")]
+[assembly: AssemblyProduct("CrmScriptLister")]
+[assembly: AssemblyCopyright("Copyright © SoftlineGroup.com 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d149cd84-70c0-49f9-beb9-4eaeec399fe7")]
+[assembly: Guid("222e619e-85e4-4015-bcc1-891876b23126")]
 
 // Version information for an assembly consists of the following four values:
 //
